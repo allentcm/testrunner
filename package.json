@@ -20,6 +20,12 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "keybindings": [
+      {
+        "command": "testrunner.runUnitTest",
+        "key": "ctrl+alt+t"
+      }
+    ],
     "commands": [
       {
         "command": "testrunner.helloWorld",
