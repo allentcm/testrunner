@@ -420,7 +420,7 @@ export class PHPUnitTestBuilderService {
       }
     }
 
-    if (needToAddNamespace) {
+    if (needToAddNamespace && false) {
       await document.insertText(
         highestUseEntityLine,
         0,
