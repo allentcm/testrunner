@@ -59,7 +59,7 @@ export class VisualCodeShim
 
     // Watch for configuration changes (currently, just for autoRunPolling auto-run config)
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration("php-tdd")) {
+      if (e.affectsConfiguration("testrunner")) {
         const oldEnableAutoRun = this.configuration.enableAutoRun;
         this.updateConfiguration();
         if (oldEnableAutoRun !== this.configuration.enableAutoRun) {
@@ -76,7 +76,7 @@ export class VisualCodeShim
    * Update stored configuration (triggered on init and config change)
    */
   protected updateConfiguration(): void {
-    const config = vscode.workspace.getConfiguration("php-tdd");
+    const config = vscode.workspace.getConfiguration("testrunner");
     this.configuration.testSubdirectory = config["testSubdirectory"];
     this.configuration.testClassTemplateFile = config["testClassTemplateFile"];
     this.configuration.enableAutoRun = config["enableAutoRun"];
@@ -201,7 +201,7 @@ export class VisualCodeShim
    * Update the current value for forcing PHP to enable JSON and tokenizer modules
    */
   async setEnablePHPExtensions(value: boolean) {
-    const config = vscode.workspace.getConfiguration("php-tdd");
+    const config = vscode.workspace.getConfiguration("testrunner");
     await config.update("enablePHPExtensions", value);
   }
 

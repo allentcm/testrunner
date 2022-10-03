@@ -1,17 +1,18 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
+
+import Spawn from "./factories/Spawn";
+import { Workflow } from "./workflow";
+import { SpawnService } from "./services/SpawnService";
 import { VisualCodeShim } from "./models/VisualCodeShim";
+import { VisualCodeDocumentShim } from "./models/VisualCodeDocumentShim";
+import { ComposerSetupService } from "./services/ComposerSetupService";
 import { PHPFileParserService } from "./services/PHPFileParserService";
 import { PHPUnitTestProjectService } from "./services/PHPUnitTestProjectService";
 import { PHPUnitTestRunnerService } from "./services/PHPUnitTestRunnerService";
-import { SpawnService } from "./services/SpawnService";
-import { Workflow } from "./workflow";
-import Spawn from "./factories/Spawn";
-import { VisualCodeDocumentShim } from "./models/VisualCodeDocumentShim";
 import { PHPDocumentEditorService } from "./services/PHPDocumentEditorService";
 import { PHPUnitTestBuilderService } from "./services/PHPUnitTestBuilderService";
-import { ComposerSetupService } from "./services/ComposerSetupService";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

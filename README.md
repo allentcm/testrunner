@@ -1,71 +1,130 @@
-# testrunner README
+# Test Runner Visual Studio Code Extension
 
-This is the README for your extension "testrunner". After writing up a brief description, we recommend including the following sections.
+This is a Visual Studio Code extension to assist with TDD in PHP.  It includes tools that help to create, run and edit unit tests in your PHP application.  By default, this extension uses Codeception, but it can be configured to run other unit test frameworks.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+* Run a method or class unit test by positioning cursor and running the Run Unit Test command (default hotkey is Ctrl+Alt+T)
+* Results are displayed in the status bar, unit test failures display as warnings in the Problems list
+* Automatically creates a unit test (and class) for you if one is not already created
+* Automatically creates PSR-4 namespaces in your composer.json so your unit tests are easier to write
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+* [PHP](https://secure.php.net/downloads.php) (for tokenizing source code)
+* [Composer](https://getcomposer.org/download/) installed globaly (to install PHPUnit and to update namespace directories)
 
-## Extension Settings
+Note:  As of version 0.1.0, if your PHP does not have JSON and tokenization built into it (i.e. they get loaded as extensions), they will get properly loaded if the
+enablePHPExtensions configuration property is set to true.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Operation
 
-For example:
+### Initialize
+
+Make sure you have PHP and Composer installed, and that you can run `php` and `composer` from a command prompt / shell.  If not, use the links in the [Requirements](#Requirements) section to install.
+
+To initialize the testrunner, open a Workspace and run the command "Test Runner: Initialize PHP Unit Test Project", which will do the following (by default configuration).  The extension will copy files required for unit tests to the workspace folder.  It will then ensure that Composer and PHPUnit are installed in the `vendor` folder.
+
+### Run or Edit a Single Unit Test
+
+Once testrunner is initialized, you can open a PHP file and move your cursor to a function or class (outside of a function) and run the command "Test Runner: Run PHP Unit Test".  If there is a unit test defined as a "@testFunction" comment line, it will be run, and the results shown in the status line (pass or fail).  If there is not a unit test defined, a unit test will be created and brought up to edit.  You can later edit the unit test by moving your cursor to the function or class, and run the command "Test Runner: Edit PHP Unit Test".
+
+### All PHP-TDD Commands
+
+* Initialize PHP Unit Test Project: Initialize, or re-initialize, files required for testrunner unit test project files to the current workspace folder.  If there is more than one workspace folder, and no file is open, you will be prompted to select the workspace folder.
+* Edit PHP Unit Test: Create or edit a unit test for the currently selected function or class.  If a function or class is not selected at the current cursor position, a warning will be displayed.
+* Run PHP Unit Test: Run a unit test for the currently selected function or class.  If no test function is defined, one will be created and activated for editing.  If a function or class is not selected at the current cursor position, a warning will be displayed.
+* Run PHP All Unit Tests: Run all unit tests
+* Run PHP All Unit Tests With Coverage: Run all unit tests, including code coverage, and then display the code coverage report
+* Clear All Unit Test Warnings & Errors: Clear any warnings for failed unit tests and the PHP-TDD output window
+
+### About the Base Unit Test Case
+
+The base unit test case implements the following three reflection-based methods to make unit testing a little more convenient.  
+
+* `setProperty($object, $propertyName, $propertyValue)`: Set the value for any property (even if private)
+* `getProperty($object, $propertyName)`: Get the value for any property (even if private)
+* `callMethod($object, $methodName, $arguments = [])`: Call any method (even if private)
+
+To use any of these, reference the method using `$this` in any test class.  For example:
+
+```php
+    /**
+     * @covers MainModule\DemoClass::myPrivateMethod
+     **/
+    public function testDemoClassMyPrivateMethod() {
+        $obj = new DemoClass();
+        $this->setProperty($obj, '_privateProperty', 'foo');
+        $this->assertEquals('bar', $this->callmethod($obj, 'myPrivateMethod'));
+    }
+```
+
+This is provided as a convenience so that you can test _any_ function as you are working on it.  If you are categorically opposed to unit testing protected/private functions, don't use it :)
+
+## Configuration
+
+### Extension Settings
 
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `testrunner.testSubdirectory`: Set the workspace folder directory where unit test project files are copied to and unit tests are stored (default = `tests/unit`)
+* `testrunner.testClassTemplateFile`: Sets the file to use as a template when creating new unit testes (default = `templates/PHPUnitTestCase.php`)
+* `testrunner.enableAutoRun`: If set to true, unit tests are run as code is edited)
+* `testrunner.enablePHPExtensions`: If set to true, JSON and tokenize PHP extensions will be explicity loaded when parsing PHP code
+* `testrunner.commands.directory`: The current working directory set when unit tests are run (default = `__WORKSPACE_DIRECTORY__`)
+* `testrunner.commands.runUnitTest`: The command to run a single unit test (default = `./vendor/bin/phpunit --testdox -c __TEST_SUBDIRECTORY__/phpunit.xml --filter __FUNCTION__ __TEST_SUBDIRECTORY__`)
+* `testrunner.commands.runAllUnitTests`: The command to run all unit tests (default = `./vendor/bin/phpunit --testdox -c __TEST_SUBDIRECTORY__/phpunit.xml __TEST_SUBDIRECTORY__`)
+* `testrunner.commands.runCodeCoverage`: The command to run all unit tests and generate a code coverage report (default = `./vendor/bin/phpunit --testdox -c __TEST_SUBDIRECTORY__/phpunit.coverage.xml __TEST_SUBDIRECTORY__`)
+* `testrunner.commands.codeCoverageReport`: The path to the code coverage report generated by runCodecoverage (default = `./__TEST_SUBDIRECTORY__/coverage/index.html`)
+* `testrunner.composer.enableInstall`: If set to true, Composer will be run to install required packages when initializing a test project (default = `true`)
+* `testrunner.composer.enableNamespace`: If set to true, PHP-TDD will ensure there is a PSR-4 namespace defined in composer.json for files tha are tested (default = `true`)
+* `testrunner.composer.packagesRequired`: A list of Composer packages to install if `enableInstall` is true (default = `["composer/composer"]`)
+* `testrunner.composer.packagesDevelopment`: A list of Composer development packages to install if `enableInstall` is true (default = `["composer/composer"]`)
+* `testrunner.composer.commands.directory`: The current working directory set when Composer is run (default = `__WORKSPACE_DIRECTORY__`)
+* `testrunner.composer.commands.require`: The command to run Composer require to install packages (default = `composer require __FLAGS__ __PACKAGE__`)
+* `testrunner.composer.commands.update`: The command to run Composer update to install packages (default = `composer update`)
+* `testrunner.composer.commands.dumpAutoload`: The command to run Composer autoload updates to install packages (default = `composer dump-autoload`)
 
-## Known Issues
+### Configuration Variables
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+The following configuration variables can be inserted into commaands and directory
+
+* \_\_WORKSPACE_DIRECTORY\_\_: the workspace directory of the currently selected file
+* \_\_TEST_SUBDIRECTORY\_\_: the subdirectory (relative to the workspace directory) where unit test files are located
+* \_\_FUNCTION\_\_: the name of the unit test to run (for `runUnitTest`)
+* \_\_PACKAGE\_\_: used to specify the name of the package when installing a Composer package
+* \_\_FLAGS\_\_: used to toggle "--dev" when installing Composer packages
+
+### Docker
+
+If you want to run PHPUnit and Composer from Docker containers, testrunner includes a Docker harness.  You will need to override the following configuration settings in your workspace:
+
+```json
+    "testrunner": {
+        "commands": {
+            "runUnitTest": "docker-compose -f __TEST_SUBDIRECTORY__/docker-compose.yaml run phpunit --testdox -c __TEST_SUBDIRECTORY__/phpunit.xml --filter __FUNCTION__ __TEST_SUBDIRECTORY__",
+            "runAllUnitTests": "docker-compose -f __TEST_SUBDIRECTORY__/docker-compose.yaml run phpunit --testdox -c __TEST_SUBDIRECTORY__/phpunit.xml __TEST_SUBDIRECTORY__",
+            "runCodeCoverage": "docker-compose -f __TEST_SUBDIRECTORY__/docker-compose.yaml run phpunit-coverage --testdox -c __TEST_SUBDIRECTORY__/phpunit.coverage.xml __TEST_SUBDIRECTORY__"
+        },
+        "composer": {
+            "commands": {
+                "require": "docker-compose -f __TEST_SUBDIRECTORY__/docker-compose.yaml run composer require __FLAGS__ __PACKAGE__",
+                "update": "docker-compose -f __TEST_SUBDIRECTORY__/docker-compose.yaml run composer update",
+                "dumpAutoload": "docker-compose -f __TEST_SUBDIRECTORY__/docker-compose.yaml run composer dump-autoload"
+            }
+        }
+    }
+```
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+See (./CHANGELOG.md)[CHANGELOG.md] for release information.
 
-### 1.0.0
+## To-Do's
 
-Initial release of ...
+* Using PHP to parse was a brute-force shortcut, if anybody shows interest in this plug-in, should probably replace with regular expressions dirctly in Javascript
+* Define a better behavior for Run and Edit when cursor is in a test function
 
-### 1.0.1
+## Development
 
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Unit tests can be run by executing ```npm run unit-test``` or by loading the project in Visual Code and launch the "Unit Tests" tasks.  Note that unit tests are run without launching Visual Code.  If you want to run the tests with Visual Code running, launch the "Integration Tests" task.
