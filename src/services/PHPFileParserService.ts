@@ -158,7 +158,7 @@ export class PHPFileParserService {
       }
       const str = token[1].trim();
       if (str.length > 0) {
-        if (str === "class" || str === "function") {
+        if (str === "class" || str === "function" || str === "static") {
           return true;
         } else {
           return false;
